@@ -21,7 +21,7 @@ class Corrector:
     def setup_aruco_detector(self, aruco_dict=cv2.aruco.DICT_6X6_1000):
         arucoDict = cv2.aruco.getPredefinedDictionary(aruco_dict)
         arucoParams = cv2.aruco.DetectorParameters()
-        arucoParams.cornerRefinementMethod = cv2.aruco.CORNER_REFINE_SUBPIX
+        arucoParams.cornerRefinementMethod = cv2.aruco.CORNER_REFINE_CONTOUR
         self._aruco_detector = cv2.aruco.ArucoDetector(arucoDict, arucoParams)
 
 
@@ -41,6 +41,13 @@ class Corrector:
 
         return centers
     
+
+    def prefilter(self, image_frame):
+        alpha = 1.5 # Contrast control (1.0-3.0)
+        beta = 0 # Brightness control (0-100)
+        image_frame = cv2.convertScaleAbs(image_frame, alpha=alpha, beta=beta)
+        return image_frame
+
 
     def do_correction(self, image_frame, centers):
         if len(centers) == 4:
