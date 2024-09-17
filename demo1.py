@@ -17,8 +17,8 @@ else:
   while(cap.isOpened()):
     ret, frame = cap.read()
     if ret == True:
-      centers = q.get_image_points(frame, aruco_size=50)
       frame = q.prefilter(frame)
+      centers = q.get_image_points(frame, aruco_size=50)
       frame = q.do_correction(frame, centers)
       out.write(frame) # Write out frame to video
 
