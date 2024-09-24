@@ -4,12 +4,12 @@
 
 Before correction:  
 
-![](https://github.com/auralius/perspective-correction/blob/main/img1.jpg)
-
+<img src="https://github.com/auralius/perspective-correction/blob/main/img1.jpg" width="400">
 
 After correction:
 
-![](https://github.com/auralius/perspective-correction/blob/main/img1_.jpg)
+<img src="https://github.com/auralius/perspective-correction/blob/main/img1_.jpg" width="400">
+
 
 
 ## Demo 2:
