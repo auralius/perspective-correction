@@ -3,19 +3,15 @@ import cv2
 
 
 class Corrector:
-    def __init__(self):
+    def __init__(self, marker_ids, refs_mm, pix_to_mm, im_size, origin_offset_mm):
         self.setup_aruco_detector()
 
-        self._pix_to_mm = 0.2  # 1 pixel = 0.2 mm
-        self._refs = np.array([[0, 0],
-                               [200, 0],
-                               [200, 140],
-                               [0, 140]], dtype=np.float32) # the markers are spaced in a 14cmx20cm rectangle
-        
-        self._refs = (self._refs + np.array([60., 35.])) / self._pix_to_mm # printing offset ca 6cm x 3.5cm
+        self._marker_ids = marker_ids # from top left, moving clockwise
+        self._pix_to_mm = pix_to_mm  # n pixel = (n * pix_to_mm) mm
+        self._refs = (refs_mm + origin_offset_mm) / self._pix_to_mm # now in pixels
 
-        self._mmw = 1920
-        self._mmh = 1080
+        self._im_w = im_size[0]
+        self._im_h = im_size[1]
 
         
     def setup_aruco_detector(self, aruco_dict=cv2.aruco.DICT_6X6_1000):
@@ -29,7 +25,7 @@ class Corrector:
         return self._aruco_detector
 
 
-    def get_image_points(self, image_frame, aruco_size=50):
+    def get_image_points(self, image_frame):
         corners, ids, _ = self._aruco_detector.detectMarkers(image_frame)
         cv2.aruco.drawDetectedMarkers(image_frame, corners, ids)
         centers = {}
@@ -43,24 +39,24 @@ class Corrector:
     
 
     def prefilter(self, image_frame):
-        alpha = 1.5 # Contrast control (1.0-3.0)
-        beta = 0 # Brightness control (0-100)
+        alpha = 1.5 # contrast control (1.0-3.0)
+        beta = 0    # brightness control (0-100)
         image_frame = cv2.convertScaleAbs(image_frame, alpha=alpha, beta=beta)
         return image_frame
 
 
     def do_correction(self, image_frame, centers):
         if len(centers) == 4:
-            srcs = np.vstack((centers[102], 
-                              centers[104], 
-                              centers[103], 
-                              centers[101]))
+            srcs = np.vstack((centers[self._marker_ids[0]], 
+                              centers[self._marker_ids[1]], 
+                              centers[self._marker_ids[2]], 
+                              centers[self._marker_ids[3]]))
             
             h, status = cv2.findHomography(srcs, self._refs)
             
-            image_dst = cv2.warpPerspective(image_frame, h, [self._mmw, self._mmh])
+            image_dst = cv2.warpPerspective(image_frame, h, [self._im_w, self._im_h])
         
         else :
-            image_dst = np.zeros([self._mmh, self._mmw, 3], dtype=np.uint16)
+            image_dst = np.zeros([self._im_h, self._im_w, 3], dtype=np.uint16)
         
         return image_dst
